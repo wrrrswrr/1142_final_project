@@ -46,7 +46,7 @@ function BlushDetailContent() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const hotspot = INVESTIGATION_HOTSPOTS.find(h => h.id === paramId) || 
+  const hotspot = INVESTIGATION_HOTSPOTS.find(h => h.id === paramId) ||
                   INVESTIGATION_HOTSPOTS.find(h => h.id === '10') ||
                   INVESTIGATION_HOTSPOTS.find(h => h.name.includes('窗邊花瓶'));
 
@@ -75,8 +75,8 @@ function BlushDetailContent() {
     return (
       <div className="h-screen bg-stone-950 flex flex-col items-center justify-center text-stone-400 gap-4">
         <p className="text-xl tracking-widest opacity-50">未找到調查目標...</p>
-        <button 
-          onClick={() => router.push('/investigation')} 
+        <button
+          onClick={() => router.push('/investigation')}
           className="px-6 py-2 border border-[#D4AF37]/40 text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all rounded"
         >
           返回列表
@@ -86,25 +86,25 @@ function BlushDetailContent() {
   }
 
   return (
-    <div 
+    <div
       ref={viewportRef}
       className="relative w-full h-screen overflow-hidden bg-stone-950 text-stone-200 select-none font-serif flex items-center justify-center"
     >
       {/* 頂部資訊條 (拆分組件) */}
-      <InvestigationHeader 
-        title={hotspot.name} 
-        subtitle="細節查看" 
+      <InvestigationHeader
+        title={hotspot.name}
+        subtitle="細節查看"
         category="Detail View"
-        onBack={() => router.back()} 
+        onBack={() => router.back()}
       />
 
       {/* 背景容器：置中填滿且不允許拖拽 */}
-      <div 
+      <div
         className="relative w-full h-full overflow-hidden flex items-center justify-center"
       >
-        <img 
-          src={hotspot.detailBackgroundUrl || "/vase.png"} 
-          alt={hotspot.name} 
+        <img
+          src={hotspot.detailBackgroundUrl || "/vase.png"}
+          alt={hotspot.name}
           className="min-w-full min-h-full w-auto h-auto max-w-none pointer-events-none select-none transition-transform duration-300"
           style={{
             transform: `scale(${DETAIL_LAYOUT.background.scale}) translate(${DETAIL_LAYOUT.background.imgX}%, ${DETAIL_LAYOUT.background.imgY}%)`,
@@ -128,7 +128,7 @@ function BlushDetailContent() {
               <p className="text-white/90 text-base md:text-lg leading-loose tracking-[0.15em] font-medium drop-shadow-[2px_2px_2px_rgba(0,0,0,0.9)]">
               「瓶裡的百合開得正好，水也是昨日新換的。一個傳言中失寵鬱結、病重難起的人，怎會有閒情雅致把花草打理得這般生機盎然？她根本沒有尋死或久病的跡象……」
               </p>
-              
+
               {/* 極簡引導線 */}
               <div className="mt-6 flex items-center gap-4 opacity-30 group-hover:opacity-50 transition-opacity duration-1000">
                 <div className="w-12 h-px bg-white" />
