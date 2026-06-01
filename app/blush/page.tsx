@@ -157,6 +157,7 @@ function BlushDetailContent() {
         isOpen={showHistory}
         onClose={() => setShowHistory(false)}
         history={[]}
+        showDefaultMemory
       />
 
       {/* 遊戲選單 (彈窗) */}

@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { appendMemoryLog } from '../lib/memoryLog';
 import { ChevronLeft } from 'lucide-react';
 import InvestigationHeader from '../components/InvestigationHeader';
 import SidebarActions from '../components/SidebarActions';
@@ -45,6 +46,7 @@ function BlushDetailContent() {
   const router = useRouter();
   const { playSFX } = useAudio();
   const paramId = searchParams.get('id');
+  const isReplay = searchParams.get('replay') === 'true';
   const [showHistory, setShowHistory] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -72,12 +74,16 @@ function BlushDetailContent() {
       const stored = localStorage.getItem('game-inventory');
       if (stored) {
         const arr = JSON.parse(stored) as (string | null)[];
-        if (arr[0]) setHasKey(true);
-        if (arr[1]) {
+        if (arr[0] === '/key.png') setHasKey(true);
+        if (arr[0] === '/letter.png') {
           setLetterPhase(3);
           setBoxOpen(true);
           setShowBottomText(false);
-          setShowClueHint(true);
+          if (isReplay) {
+            setShowDialog(true);
+          } else {
+            setShowClueHint(true);
+          }
         }
       }
     } catch {}
@@ -87,7 +93,7 @@ function BlushDetailContent() {
         const stored = localStorage.getItem('game-inventory');
         if (stored) {
           const arr = JSON.parse(stored) as (string | null)[];
-          setHasKey(!!arr[0]);
+          setHasKey(arr[0] === '/key.png');
         }
       } catch {}
     };
@@ -133,11 +139,11 @@ function BlushDetailContent() {
     setTimeout(() => setLetterPhase(1), 600);
   }, [hasKey, boxOpen]);
 
-  // 玩家點擊信件大圖：先開 bar → 等 bar 展開 → 測量 slot 1 位置 → 開始飛入動畫
+  // 玩家點擊信件大圖：先開 bar → 等 bar 展開 → 測量 slot 0 位置 → 開始飛入動畫
   const handleLetterPopupClick = useCallback(() => {
     setInventoryForceOpen(true);
     setTimeout(() => {
-      const el = document.querySelector('[data-inventory-slot="1"]');
+      const el = document.querySelector('[data-inventory-slot="0"]');
       if (el) {
         const rect = el.getBoundingClientRect();
         setSlotTarget({
@@ -154,9 +160,10 @@ function BlushDetailContent() {
     try {
       const stored = localStorage.getItem('game-inventory');
       const slots: (string | null)[] = stored ? JSON.parse(stored) : [null, null, null, null, null];
-      slots[1] = '/letter.png';
+      slots[0] = '/letter.png';
       localStorage.setItem('game-inventory', JSON.stringify(slots));
       window.dispatchEvent(new Event('inventory-update'));
+      appendMemoryLog('/letter.png');
     } catch {}
     setLetterPhase(3);
     setInventoryForceOpen(false);
@@ -209,11 +216,7 @@ function BlushDetailContent() {
         <img
           src={boxOpen ? '/jewelry_box2.png' : (hotspot.detailBackgroundUrl || '/jewelry_box.png')}
           alt={hotspot.name}
-          className="min-w-full min-h-full w-auto h-auto max-w-none pointer-events-none select-none transition-all duration-700"
-          style={{
-            transform: `scale(${DETAIL_LAYOUT.background.scale}) translate(${DETAIL_LAYOUT.background.imgX}%, ${DETAIL_LAYOUT.background.imgY}%)`,
-            transformOrigin: 'center center'
-          }}
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none transition-all duration-700"
         />
       </div>
 
@@ -243,7 +246,7 @@ function BlushDetailContent() {
               transition={{ delay: 0.3, duration: 0.4 }}
               className="mt-6 text-[#D4AF37] text-2xl tracking-[0.4em] font-serif drop-shadow-[2px_2px_6px_rgba(0,0,0,1)]"
             >
-              取得「家書」
+              取得「未寄出的家書」
             </motion.p>
             <motion.p
               initial={{ opacity: 0 }}
@@ -263,7 +266,7 @@ function BlushDetailContent() {
           className="fixed z-150 pointer-events-none"
           initial={{ left: '50vw', top: '50vh', x: '-50%', y: '-50%', scale: 1, opacity: 1 }}
           animate={{
-            left: slotTarget?.left ?? 'calc(100vw - 446px)',
+            left: slotTarget?.left ?? 'calc(100vw - 536px)',
             top: slotTarget?.top ?? 'calc(100vh - 60px)',
             x: '-50%', y: '-50%', scale: 0.2, opacity: 0.9
           }}
@@ -302,7 +305,6 @@ function BlushDetailContent() {
       <AnimatePresence>
         {showDialog && (
           <motion.div
-            key={dialogLineIndex}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -355,7 +357,7 @@ function BlushDetailContent() {
         <InventoryBar
           isEditMode={isEditMode}
           forceOpen={inventoryForceOpen}
-          draggableSlots={hasKey && !boxOpen ? [0] : []}
+          forceClose={showDialog}
           onItemDrop={handleItemDrop}
         />
       </div>
@@ -365,6 +367,7 @@ function BlushDetailContent() {
         isOpen={showHistory}
         onClose={() => setShowHistory(false)}
         history={[]}
+        showDefaultMemory
       />
 
       {/* 遊戲選單 */}

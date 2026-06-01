@@ -35,19 +35,15 @@ export default function InvestigationPage() {
 
   // 檢查是否為從劇情銜接過來
   useEffect(() => {
-    // 立即讀取並移除標記，確保它是「一次性消費」
     const flag = sessionStorage.getItem('show-investigation-intro');
     if (flag === 'true') {
       setShowTitle(true);
       sessionStorage.removeItem('show-investigation-intro');
-      
-      const timer = setTimeout(() => {
-        setShowTitle(false);
-      }, 3000);
-      
+      const timer = setTimeout(() => setShowTitle(false), 3000);
       return () => clearTimeout(timer);
     }
-  }, []); // 僅在組件掛載時執行一次
+  }, []);
+
 
   // 用快捷鍵 Ctrl + E 同步編輯模式狀態
   useEffect(() => {
@@ -206,7 +202,8 @@ export default function InvestigationPage() {
       <HistoryLog
         isOpen={showHistory}
         onClose={() => setShowHistory(false)}
-        history={[]} // 調查階段可能需要獨立的紀錄邏輯
+        history={[]}
+        showDefaultMemory
       />
 
       {/* 遊戲選單 (包含儲存、讀取、設定) */}

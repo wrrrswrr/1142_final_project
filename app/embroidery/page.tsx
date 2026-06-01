@@ -105,7 +105,7 @@ function BlushDetailContent() {
         <img 
           src={hotspot.detailBackgroundUrl || "/embroidery.png"} 
           alt={hotspot.name} 
-          className="min-w-full min-h-full w-auto h-auto max-w-none pointer-events-none select-none transition-transform duration-300"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none transition-transform duration-300"
           style={{ 
             transform: `scale(${DETAIL_LAYOUT.background.scale}) translate(${DETAIL_LAYOUT.background.imgX}%, ${DETAIL_LAYOUT.background.imgY}%)`,
             transformOrigin: 'center center'
@@ -157,6 +157,7 @@ function BlushDetailContent() {
         isOpen={showHistory}
         onClose={() => setShowHistory(false)}
         history={[]}
+        showDefaultMemory
       />
 
       {/* 遊戲選單 (彈窗) */}

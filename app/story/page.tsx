@@ -37,6 +37,11 @@ const STANDING_LAYOUT = {
 export default function VNPage() {
   const [state, setState] = useState<VNState>(() => {
     if (typeof window === 'undefined') return { currentSceneId: 'start', currentLineIndex: 0, history: [], variables: {} };
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('restart') === 'true') {
+      localStorage.removeItem('vn-save-ancient');
+      return { currentSceneId: 'start', currentLineIndex: 0, history: [], variables: {} };
+    }
     const saved = localStorage.getItem('vn-save-ancient');
     return saved ? JSON.parse(saved) : { currentSceneId: 'start', currentLineIndex: 0, history: [], variables: {} };
   });
@@ -359,6 +364,7 @@ export default function VNPage() {
         isOpen={showHistory}
         onClose={() => setShowHistory(false)}
         history={state.history}
+        showDefaultMemory
       />
 
       {/* 主選單 */}

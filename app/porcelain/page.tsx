@@ -56,6 +56,7 @@ function BlushDetailContent() {
   const porcelainRef = useRef<HTMLImageElement>(null);
   const dragStartAngleRef = useRef(0);
   const dragStartRotationRef = useRef(0);
+  const hasBeenLiftedRef = useRef(false);
 
   // 靜態配置自定義配置：直接在此控制背景圖
   const DETAIL_LAYOUT = {
@@ -66,40 +67,19 @@ function BlushDetailContent() {
     }
   };
 
-  // 進入頁面時：
-  // - 瀏覽器重整（navigation.type === 'reload'）→ 清除道具欄、重置 session 標記
-  // - SPA 導航回來（session 標記存在）→ 從 localStorage 恢復狀態
-  // - 首次進入（無 session 標記）→ 清除道具欄、設定 session 標記
   useEffect(() => {
     const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
     const isReload = navEntry ? navEntry.type === 'reload' : false;
-
     if (isReload) {
       localStorage.removeItem('game-inventory');
       window.dispatchEvent(new Event('inventory-update'));
-      sessionStorage.removeItem('porcelain-visited');
+      sessionStorage.clear();
       return;
     }
-
-    const sessionFlag = sessionStorage.getItem('porcelain-visited');
-    if (sessionFlag) {
-      // SPA 導航回來，恢復狀態
-      try {
-        const stored = localStorage.getItem('game-inventory');
-        if (stored) {
-          const arr = JSON.parse(stored) as (string | null)[];
-          if (arr[0] || arr[1]) {
-            setKeyPhase(3);
-            setShowBottomText(false);
-            setShowClueHint(true);
-          }
-        }
-      } catch {}
-    } else {
-      // 首次進入，清除紀錄
-      localStorage.removeItem('game-inventory');
-      window.dispatchEvent(new Event('inventory-update'));
-      sessionStorage.setItem('porcelain-visited', '1');
+    if (sessionStorage.getItem('porcelain-clue-done')) {
+      setKeyPhase(3);
+      setShowBottomText(false);
+      setShowClueHint(true);
     }
   }, []);
 
@@ -150,6 +130,7 @@ function BlushDetailContent() {
     }
     // 尚未被點起：點一下移到中央
     if (!porcelainLifted) {
+      hasBeenLiftedRef.current = true;
       setPorcelainLifted(true);
       return;
     }
@@ -210,15 +191,16 @@ function BlushDetailContent() {
   // 飛入動畫完成：寫入 localStorage、通知 InventoryBar、瓷器回到底部
   const handleKeyAnimationComplete = useCallback(() => {
     try {
-      const slots: (string | null)[] = [null, null, null, null, null];
+      const stored = localStorage.getItem('game-inventory');
+      const slots: (string | null)[] = stored ? JSON.parse(stored) : [null, null, null, null, null];
       slots[0] = '/key.png';
       localStorage.setItem('game-inventory', JSON.stringify(slots));
       window.dispatchEvent(new Event('inventory-update'));
     } catch {}
+    sessionStorage.setItem('porcelain-clue-done', '1');
     setKeyPhase(3);
     setPorcelainLifted(false);
     setRotation(0);
-    // bar 保持開著，等 dialog 彈出後玩家看到 key 在 bar 中
     setShowBottomText(false);
     setTimeout(() => setShowDialog(true), 600);
   }, []);
@@ -308,9 +290,9 @@ function BlushDetailContent() {
             rotate: rotation,
           }}
           transition={
-            porcelainLifted
+            porcelainLifted || hasBeenLiftedRef.current
               ? { y: { duration: 0.6, ease: [0.4, 0, 0.2, 1] }, rotate: { duration: 0 } }
-              : { y: { duration: 0.6, ease: [0.4, 0, 0.2, 1] }, rotate: { duration: 0 } }
+              : { y: { duration: 0 }, rotate: { duration: 0 } }
           }
           style={{
             cursor: keyPhase === 3
@@ -348,7 +330,7 @@ function BlushDetailContent() {
               transition={{ delay: 0.3, duration: 0.4 }}
               className="mt-6 text-[#D4AF37] text-2xl tracking-[0.4em] font-serif drop-shadow-[2px_2px_6px_rgba(0,0,0,1)]"
             >
-              取得「鑰匙」
+              取得「精緻的小鑰匙」
             </motion.p>
             <motion.p
               initial={{ opacity: 0 }}
@@ -458,7 +440,7 @@ function BlushDetailContent() {
 
       {/* 道具欄 (右下角折疊) - 編輯模式時提高 z-index 以便操作 */}
       <div className={isEditMode ? 'z-2000' : 'z-40'}>
-        <InventoryBar isEditMode={isEditMode} forceOpen={inventoryForceOpen} />
+        <InventoryBar isEditMode={isEditMode} forceOpen={inventoryForceOpen} forceClose={showDialog} />
       </div>
 
       {/* 對話紀錄 (側邊欄) */}
@@ -466,6 +448,7 @@ function BlushDetailContent() {
         isOpen={showHistory}
         onClose={() => setShowHistory(false)}
         history={[]}
+        showDefaultMemory
       />
 
       {/* 遊戲選單 (彈窗) */}

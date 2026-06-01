@@ -8,16 +8,18 @@ import { useAudio } from '../lib/AudioContext';
 export default function InventoryBar({
   isEditMode = false,
   forceOpen = false,
+  forceClose = false,
   draggableSlots = [],
   onItemDrop,
 }: {
   isEditMode?: boolean;
   forceOpen?: boolean;
+  forceClose?: boolean;
   draggableSlots?: number[];
   onItemDrop?: (slotIndex: number, x: number, y: number) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const panelVisible = forceOpen || isOpen;
+  const panelVisible = !forceClose && (forceOpen || isOpen);
   const { playSFX } = useAudio();
   const [config, setConfig] = useState({
     width: 500,
@@ -28,7 +30,11 @@ export default function InventoryBar({
   const [previewItem, setPreviewItem] = useState<{ src: string; name: string } | null>(null);
   const didDragRef = useRef(false);
 
-  const ITEM_NAMES: Record<string, string> = { '/key.png': '鑰匙', '/letter.png': '家書' };
+  const ITEM_NAMES: Record<string, string> = { '/key.png': '精緻的小鑰匙', '/letter.png': '未寄出的家書', '/liquid.png': '杯中的不明液體', '/needle_black.png': '發黑的銀針', '/silk.png': '絲線', '/stamp.png': '半枚龍紋斷章', '/druglist.png': '內務府領藥單' };
+  const ITEM_HINT_SRCS = new Set(['/letter.png', '/needle_black.png', '/druglist.png', '/stamp.png']);
+  const ITEM_ROTATIONS: Record<string, string> = { '/needle_black.png': '-30deg' };
+  const ITEM_SCALES: Record<string, number> = { '/stamp.png': 0.65 };
+  const ITEM_TRANSLATE_Y: Record<string, string> = { '/stamp.png': '30%' };
 
   const loadSlots = () => {
     try {
@@ -45,11 +51,18 @@ export default function InventoryBar({
   };
 
   useEffect(() => {
+    if (forceClose) setIsOpen(false);
+  }, [forceClose]);
+
+  useEffect(() => {
     loadSlots();
     window.addEventListener('storage', loadSlots);
     window.addEventListener('inventory-update', loadSlots);
     // 頁面重整或關閉時清除道具欄紀錄
-    const clearOnUnload = () => localStorage.removeItem('game-inventory');
+    const clearOnUnload = () => {
+      localStorage.removeItem('game-inventory');
+      localStorage.removeItem('game-memory-log');
+    };
     window.addEventListener('beforeunload', clearOnUnload);
     return () => {
       window.removeEventListener('storage', loadSlots);
@@ -106,6 +119,7 @@ export default function InventoryBar({
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.5, ease: 'backOut' }}
               className="w-56 h-56 object-contain drop-shadow-[0_0_32px_rgba(212,175,55,1)]"
+              style={{ rotate: ITEM_ROTATIONS[previewItem.src] ?? undefined }}
             />
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -115,6 +129,16 @@ export default function InventoryBar({
             >
               {previewItem.name}
             </motion.p>
+            {ITEM_HINT_SRCS.has(previewItem.src) && (
+              <motion.p
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 0.75 }}
+                transition={{ delay: 0.55, duration: 0.5 }}
+                className="mt-4 text-[#D4AF37] text-sm tracking-[0.35em] font-serif drop-shadow-[1px_1px_4px_rgba(0,0,0,1)]"
+              >
+                回憶「往事」尋找線索
+              </motion.p>
+            )}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
@@ -193,8 +217,7 @@ export default function InventoryBar({
                     className="aspect-square h-[33%] rounded-sm flex items-center justify-center relative group"
                     style={{ marginBottom: '10%', overflow: 'visible' }}
                   >
-                    {slots[i] && draggableSlots.includes(i) ? (
-                      /* 可拖拽的道具 */
+                    {slots[i] ? (
                       <motion.img
                         src={slots[i]!}
                         alt=""
@@ -213,19 +236,8 @@ export default function InventoryBar({
                           setPreviewItem({ src, name: ITEM_NAMES[src] ?? src });
                         }}
                         className="w-full h-full object-contain"
-                        style={{ translateY: '22%', cursor: 'grab', position: 'relative', zIndex: 50 }}
+                        style={{ translateY: ITEM_TRANSLATE_Y[slots[i]!] ?? '22%', cursor: 'grab', position: 'relative', zIndex: 50, rotate: ITEM_ROTATIONS[slots[i]!] ?? undefined, scale: ITEM_SCALES[slots[i]!] ?? undefined }}
                         whileDrag={{ scale: 1.4, zIndex: 9999, cursor: 'grabbing' }}
-                      />
-                    ) : slots[i] ? (
-                      <img
-                        src={slots[i]!}
-                        alt=""
-                        className="w-full h-full object-contain cursor-pointer"
-                        style={{ transform: 'translateY(22%)' }}
-                        onClick={() => {
-                          const src = slots[i]!;
-                          setPreviewItem({ src, name: ITEM_NAMES[src] ?? src });
-                        }}
                       />
                     ) : null}
                   </div>
