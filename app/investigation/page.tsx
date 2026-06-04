@@ -13,6 +13,7 @@ import { INVESTIGATION_HOTSPOTS, HotspotData } from '.././data/investigationHots
 import InvestigationHeader from '.././components/InvestigationHeader';
 import InventoryBar from '.././components/InventoryBar';
 import { useAudio } from '.././lib/AudioContext';
+import EndingTrigger from '.././components/EndingTrigger';
 
 
 export default function InvestigationPage() {
@@ -215,6 +216,9 @@ export default function InvestigationPage() {
           router.push('/');
         }}
       />
+
+      <EndingTrigger />
+
     </div >
   );
 }

@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+
 "use client";
+
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -11,6 +13,7 @@ import { SCRIPT, CHARACTERS, BACKGROUNDS } from '.././script';
 import { VNState, Line } from '.././types';
 import { useRouter } from 'next/navigation';
 import { useAudio } from '.././lib/AudioContext';
+
 
 // 導入拆分後的組件
 import DialogueBox from '.././components/DialogueBox';
@@ -20,7 +23,9 @@ import SidebarActions from '.././components/SidebarActions';
 import ChoiceButton from '.././components/ChoiceButton';
 import router from 'next/router';
 
+
 const LOG_IMAGE = "/log.png";
+
 
 const STANDING_LAYOUT = {
   // 定義預設的三個位置 (相對於螢幕中心)
@@ -34,6 +39,7 @@ const STANDING_LAYOUT = {
   baseHeight: "120vh"
 };
 
+
 export default function VNPage() {
   const [state, setState] = useState<VNState>(() => {
     if (typeof window === 'undefined') return { currentSceneId: 'start', currentLineIndex: 0, history: [], variables: {} };
@@ -46,6 +52,7 @@ export default function VNPage() {
     return saved ? JSON.parse(saved) : { currentSceneId: 'start', currentLineIndex: 0, history: [], variables: {} };
   });
 
+
   const { playBGM, playSFX, stopSFX } = useAudio();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -53,6 +60,7 @@ export default function VNPage() {
   const [isSceneTransitioning, setIsSceneTransitioning] = useState(false);
   const [isFlashBlack, setIsFlashBlack] = useState(false);
   const [choicesVisible, setChoicesVisible] = useState(false);
+
 
   // 音樂控制邏輯
   useEffect(() => {
@@ -66,15 +74,18 @@ export default function VNPage() {
     }
   }, [state.currentSceneId, playBGM]);
 
+
   // 特定對話音效觸發
   useEffect(() => {
     const line = SCRIPT.find(s => s.id === state.currentSceneId)?.lines[state.currentLineIndex];
     if (!line) return;
 
+
      // 停止指定的音效
      if (line.stopSFXKey) {
       stopSFX(line.stopSFXKey);
     }
+
 
     // 優先播放腳本中指定的音效
     if (line.sfxKey) {
@@ -82,28 +93,36 @@ export default function VNPage() {
       return;
     }
 
+
   }, [state.currentSceneId, state.currentLineIndex, playSFX, stopSFX]);
+
 
   useEffect(() => {
     localStorage.setItem('vn-save-ancient', JSON.stringify(state));
   }, [state]);
 
+
   const currentScene = SCRIPT.find((s) => s.id === state.currentSceneId) || SCRIPT[0];
   const sceneLine: Line | undefined = currentScene.lines[state.currentLineIndex];
 
+
   // 判斷是否為回憶場景 (僅限結局 B 第一部分)
   const isMemoryScene = state.currentSceneId === 'endingB';
+
 
   // 安全檢查：若目前行不存在（可能是狀態同步中的短暫不一致），返回空或載入中
   if (!sceneLine) {
     return <div className="h-screen w-full bg-black" />;
   }
 
+
   // 判斷是否正要進入第一幕對話（從獨白切換過來、開場）
   const isEntranceLine = (state.currentLineIndex === 0) || (!sceneLine.isMonologue &&
     (currentScene.lines[state.currentLineIndex - 1]?.isMonologue)) || isFlashBlack;
 
+
   const currentChar = sceneLine.characterId ? (CHARACTERS as any)[sceneLine.characterId] : null;
+
 
   // 取得當前背景 URL
   const currentBackgroundUrl = sceneLine.isMonologue && !sceneLine.backgroundId
@@ -112,17 +131,18 @@ export default function VNPage() {
     (currentScene.defaultBackgroundId && BACKGROUNDS[currentScene.defaultBackgroundId]?.url) ||
     LOG_IMAGE;
 
+
     const nextLine = useCallback(() => {
       // 如果這一個 Scene 有選項，且已經是最後一句，且尚未顯示選項，則改為顯示選項
       const isAtLastLine = state.currentLineIndex + 1 >= currentScene.lines.length;
       if (isAtLastLine && currentScene.choices && currentScene.choices.length > 0 && !choicesVisible) {
         setChoicesVisible(true);
-        return; 
+        return;
       }
-  
+ 
       const isEndingMonologue = sceneLine.isMonologue &&
         (state.currentLineIndex + 1 >= currentScene.lines.length || !currentScene.lines[state.currentLineIndex + 1].isMonologue);
-  
+ 
       if (isEndingMonologue && !isSceneTransitioning) {
         setIsSceneTransitioning(true);
         setTimeout(() => {
@@ -133,7 +153,7 @@ export default function VNPage() {
         proceedNextLine();
       }
     }, [state, currentScene, sceneLine, isSceneTransitioning]);
-  
+ 
     const proceedNextLine = () => {
     if (state.currentLineIndex + 1 < currentScene.lines.length) {
       setState((prev) => ({
@@ -141,6 +161,7 @@ export default function VNPage() {
         currentLineIndex: prev.currentLineIndex + 1,
         history: [...prev.history, { sceneId: prev.currentSceneId, lineIndex: prev.currentLineIndex }],
       }));
+
 
     } else {
       // 檢查是否是結局最終行
@@ -151,10 +172,12 @@ export default function VNPage() {
         setIsFlashBlack(true);
         setTimeout(() => router.push('/ending?type=endingB'), 1000);
 
+
       } else if (currentScene.nextSceneId === 'investigation') {
         setIsFlashBlack(true);
         sessionStorage.setItem('show-investigation-intro', 'true');
         setTimeout(() => router.push('/investigation'), 1000);
+
 
       } else if (currentScene.nextSceneId) {
         // 章節切換
@@ -180,6 +203,7 @@ export default function VNPage() {
     }
   };
 
+
   // Debug 功能：跳轉結局
   const jumpToEnding = (endingId: string) => {
     if (isFlashBlack) return;
@@ -198,10 +222,12 @@ export default function VNPage() {
     }, 900);
   };
 
+
   const resetGame = () => {
     localStorage.removeItem('vn-save-ancient');
     window.location.href = '/';
   };
+
 
   const handleChoiceClick = (targetSceneId: string) => {
     const currentScene = SCRIPT.find((s) => s.id === state.currentSceneId);
@@ -229,8 +255,10 @@ export default function VNPage() {
     }, 900);
   };
 
+
   return (
     <div className={`relative w-full h-screen overflow-hidden bg-black text-stone-200 select-none font-serif transition-all duration-1000 ${isMemoryScene ? 'grayscale contrast-125' : ''}`}>
+
 
       {/* 背景層 */}
       <div className="absolute inset-0 z-0">
@@ -255,6 +283,7 @@ export default function VNPage() {
         </AnimatePresence>
       </div>
 
+
       <AnimatePresence>
         {!isSceneTransitioning && !sceneLine.isMonologue && (
           <div
@@ -267,6 +296,7 @@ export default function VNPage() {
                 if (!char) return null;
                 const imgUrl = char.standingPortraits[p.expression];
                 const posConfig = (STANDING_LAYOUT.positions as any)[p.position || 'center'] || STANDING_LAYOUT.positions.center;
+
 
                 return (
                   <motion.div
@@ -301,6 +331,7 @@ export default function VNPage() {
         )}
       </AnimatePresence>
 
+
       {/* 記憶特效：暗角 */}
       <AnimatePresence>
         {isMemoryScene && (
@@ -310,18 +341,20 @@ export default function VNPage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 2 }}
             className="absolute inset-0 z-25 pointer-events-none"
-            style={{ 
+            style={{
               background: 'radial-gradient(circle, transparent 20%, rgba(0,0,0,0.7) 120%)'
             }}
           />
         )}
       </AnimatePresence>
 
+
       {/* 右上角功能按鈕 */}
       <SidebarActions
         onOpenHistory={() => setShowHistory(true)}
         onOpenMenu={() => setIsMenuOpen(true)}
       />
+
 
       {/* 對話組件 */}
       <AnimatePresence>
@@ -336,10 +369,11 @@ export default function VNPage() {
         )}
       </AnimatePresence>
 
+
       {/* 選項介面 */}
       <AnimatePresence>
         {choicesVisible && currentScene.choices && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -359,6 +393,7 @@ export default function VNPage() {
         )}
       </AnimatePresence>
 
+
       {/* 對話紀錄 (側邊欄) */}
       <HistoryLog
         isOpen={showHistory}
@@ -367,12 +402,14 @@ export default function VNPage() {
         showDefaultMemory
       />
 
+
       {/* 主選單 */}
       <GameMenu
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
         onReset={resetGame}
       />
+
 
       {/* 閃黑過渡層 (放在最上層) */}
       <AnimatePresence>
@@ -394,23 +431,7 @@ export default function VNPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Debug 結局觸發按鈕 (僅限開發預覽) */}
-      <div className="absolute left-4 top-20 z-60 flex flex-col gap-2 opacity-20 hover:opacity-100 transition-opacity">
-        <button
-          onClick={() => jumpToEnding('endingA')}
-          className="px-2 py-1 bg-stone-800 text-xs border border-stone-600 rounded"
-        >
-          DEBUG: Ending A
-        </button>
-        <button
-          onClick={() => jumpToEnding('endingB')}
-          className="px-2 py-1 bg-stone-800 text-xs border border-stone-600 rounded"
-        >
-          DEBUG: Ending B
-        </button>
-      </div>
-
+      
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
         .custom-scrollbar::-webkit-scrollbar { width: 3px; }
@@ -420,6 +441,7 @@ export default function VNPage() {
   );
 }
 
+
 function setState(arg0: (prev: any) => any) {
   throw new Error('Function not implemented.');
 }
@@ -427,9 +449,11 @@ function setChoicesVisible(arg0: boolean) {
   throw new Error('Function not implemented.');
 }
 
+
 function setIsFlashBlack(arg0: boolean) {
   throw new Error('Function not implemented.');
 }
+
 
 function playSFX(sfxKey: any) {
   throw new Error('Function not implemented.');

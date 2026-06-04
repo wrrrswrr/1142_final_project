@@ -39,25 +39,30 @@ export default function DialogueBox({
     nextLine: () => void;
     isFirstDialogueAfterMonologue?: boolean;
 }) {
+    const [mounted, setMounted] = useState(false);
     const [displayedText, setDisplayedText] = useState("");
     const [isComplete, setIsComplete] = useState(false);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
-
     const delayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // 確保只在 client 端渲染，避免 SSR hydration mismatch
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // 重置打字機效果
     useEffect(() => {
+        if (!mounted) return;
+
         setDisplayedText("");
         setIsComplete(false);
 
         let currentIndex = 0;
         const fullText = currentLine.text;
 
-        // 清除之前的計時器與延遲
         if (timerRef.current) clearInterval(timerRef.current);
         if (delayTimeoutRef.current) clearTimeout(delayTimeoutRef.current);
 
-        // 如果是轉場後的第一句對話，延遲啟動打字機，等待對話框淡入完成
         const startDelay = isFirstDialogueAfterMonologue ? 1100 : 0;
 
         const startTypewriter = () => {
@@ -77,21 +82,26 @@ export default function DialogueBox({
             if (delayTimeoutRef.current) clearTimeout(delayTimeoutRef.current);
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [currentLine.text, isFirstDialogueAfterMonologue]);
+    }, [mounted, currentLine.text, isFirstDialogueAfterMonologue]);
 
     const handleBoxClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!isComplete) {
-            // 如果還在延遲中或打字中，直接停止計時器並顯示全文
             if (delayTimeoutRef.current) clearTimeout(delayTimeoutRef.current);
             if (timerRef.current) clearInterval(timerRef.current);
             setDisplayedText(currentLine.text);
             setIsComplete(true);
         } else {
-            // 如果已經跑完，進入下一句
             nextLine();
         }
     };
+
+    // SSR 階段回傳空殼，避免 hydration mismatch
+    if (!mounted) {
+        return (
+            <div className={`absolute bottom-6 inset-x-0 ${currentLine.isMonologue ? 'z-50 h-screen bottom-0 px-0' : 'z-20'} px-4 md:px-12 pointer-events-none`} />
+        );
+    }
 
     return (
         <div className={`absolute bottom-6 inset-x-0 ${currentLine.isMonologue ? 'z-50 h-screen bottom-0 px-0' : 'z-20'} px-4 md:px-12 pointer-events-none transition-all duration-700`}>
@@ -258,3 +268,4 @@ export default function DialogueBox({
         </div>
     );
 }
+
