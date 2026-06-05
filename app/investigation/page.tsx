@@ -213,6 +213,10 @@ export default function InvestigationPage() {
         onClose={() => setIsMenuOpen(false)}
         onReset={() => {
           localStorage.removeItem('vn-save-ancient');
+          localStorage.removeItem('game-inventory');
+          localStorage.removeItem('game-memory-log');
+          sessionStorage.clear();
+        
           router.push('/');
         }}
       />

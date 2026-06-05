@@ -70,17 +70,22 @@ function BlushDetailContent() {
   useEffect(() => {
     const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
     const isReload = navEntry ? navEntry.type === 'reload' : false;
-    if (isReload) {
+    if (false && isReload) {
       localStorage.removeItem('game-inventory');
       window.dispatchEvent(new Event('inventory-update'));
       sessionStorage.clear();
       return;
     }
-    if (sessionStorage.getItem('porcelain-clue-done')) {
-      setKeyPhase(3);
-      setShowBottomText(false);
-      setShowClueHint(true);
-    }
+    try {
+      const stored = localStorage.getItem('game-inventory');
+      const slots = stored ? JSON.parse(stored) : [];
+    
+      if (slots[0] === '/key.png') {
+        setKeyPhase(3);
+        setShowBottomText(false);
+        setShowClueHint(true);
+      }
+    } catch {}
   }, []);
 
   // 用快捷鍵 Ctrl + E 同步編輯模式狀態
@@ -103,7 +108,9 @@ function BlushDetailContent() {
       const aspectRatio = el.naturalHeight / (el.naturalWidth || 1);
       const imgH = renderedWidth * aspectRatio;
       const vh = window.innerHeight;
-      setInitY(vh / 2 - 20 - imgH / 2);
+      const targetY = vh / 2 - 20 - imgH / 2;
+      console.log('initY=', targetY);
+      setInitY(targetY);
     }
   }, []);
 
@@ -197,7 +204,7 @@ function BlushDetailContent() {
       localStorage.setItem('game-inventory', JSON.stringify(slots));
       window.dispatchEvent(new Event('inventory-update'));
     } catch {}
-    sessionStorage.setItem('porcelain-clue-done', '1');
+    
     setKeyPhase(3);
     setPorcelainLifted(false);
     setRotation(0);
@@ -313,7 +320,7 @@ function BlushDetailContent() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
             onClick={handleKeyPopupClick}
-            className="absolute inset-0 z-[100] flex flex-col items-center justify-center cursor-pointer"
+            className="absolute inset-0 z-100 flex flex-col items-center justify-center cursor-pointer"
             style={{ background: 'rgba(0,0,0,0.65)' }}
           >
             <motion.img
@@ -347,7 +354,7 @@ function BlushDetailContent() {
       {/* Phase 2：鑰匙從中央縮小飛入道具欄第一格 */}
       {keyPhase === 2 && (
         <motion.div
-          className="fixed z-[150] pointer-events-none"
+          className="fixed z-900 pointer-events-none"
           initial={{ left: '50vw', top: '50vh', x: '-50%', y: '-50%', scale: 1, opacity: 1 }}
           animate={{
             left: slotTarget?.left ?? 'calc(100vw - 536px)',
@@ -369,7 +376,7 @@ function BlushDetailContent() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8 }}
-            className="absolute inset-0 z-[120] pointer-events-none"
+            className="absolute inset-0 z-120 pointer-events-none"
           >
             <DialogueBox
               currentLine={DIALOG_LINE}

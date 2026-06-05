@@ -52,13 +52,13 @@ export default function HistoryLog({ isOpen, onClose, history, showDefaultMemory
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
             onClick={handleClose} 
-            className="fixed inset-0 bg-black/60 z-60" 
+            className="fixed inset-0 bg-black/60 z-9998" 
           />
           <motion.div 
             initial={{ x: '100%' }} 
             animate={{ x: 0 }} 
             exit={{ x: '100%' }}
-            className="fixed inset-y-0 right-0 w-full max-w-md bg-[#0d0d0d] border-l-2 border-[#D4AF37]/20 z-70 p-10 flex flex-col shadow-[-20px_0_40px_rgba(0,0,0,0.8)]"
+            className="fixed inset-y-0 right-0 w-full max-w-md bg-[#0d0d0d] border-l-2 border-[#D4AF37]/20 z-9999 p-10 flex flex-col shadow-[-20px_0_40px_rgba(0,0,0,0.8)]"
           >
             <h3 className="text-3xl font-black tracking-[0.5em] mb-10 text-[#D4AF37] border-b border-[#D4AF37]/10 pb-6 text-center font-serif">往事錄</h3>
             <div className="flex-1 overflow-y-auto space-y-8 pr-4 custom-scrollbar font-serif">

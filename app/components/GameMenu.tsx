@@ -25,7 +25,7 @@ export default function GameMenu({ isOpen, onClose, onReset }: GameMenuProps) {
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1 }} 
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/95 z-100 flex flex-col items-center justify-center p-6 font-serif"
+          className="fixed inset-0 bg-black/95 z-9999 flex flex-col items-center justify-center p-6 font-serif"
           onClick={() => handleAction(onClose)}
           >
             <h2 className="text-7xl font-black tracking-[0.8em] text-[#D4AF37] mb-20 opacity-80 pl-[0.8em]">選單</h2>
