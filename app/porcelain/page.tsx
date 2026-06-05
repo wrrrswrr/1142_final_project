@@ -82,8 +82,6 @@ function BlushDetailContent() {
     
       if (slots[0] === '/key.png') {
         setKeyPhase(3);
-        setShowBottomText(false);
-        setShowClueHint(true);
       }
     } catch {}
   }, []);
@@ -132,7 +130,6 @@ function BlushDetailContent() {
   const handlePorcelainMouseDown = useCallback((e: React.MouseEvent) => {
     // phase 3：點擊顯示「已取得線索」
     if (keyPhase === 3) {
-      setShowClueHint(true);
       return;
     }
     // 尚未被點起：點一下移到中央
