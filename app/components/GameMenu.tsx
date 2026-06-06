@@ -31,7 +31,18 @@ export default function GameMenu({ isOpen, onClose, onReset }: GameMenuProps) {
             <h2 className="text-7xl font-black tracking-[0.8em] text-[#D4AF37] mb-20 opacity-80 pl-[0.8em]">選單</h2>
             <div className="flex flex-col gap-8 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
               <MenuButtonStyle text="返回" onClick={() => handleAction(onClose)} />
-              <MenuButtonStyle text="重來" onClick={() => handleAction(onReset)} highlight />
+              <MenuButtonStyle
+                text="重來"
+                onClick={() => {
+                  localStorage.removeItem('vn-save-ancient');
+                  localStorage.removeItem('game-inventory');
+                  localStorage.removeItem('game-memory-log');
+                  sessionStorage.clear();
+
+                  window.location.href = '/';
+                }}
+                highlight
+              />
               <button 
                 onClick={() => handleAction(onClose)} 
                 className="mt-20 text-stone-600 hover:text-stone-300 transition-colors tracking-[0.5em] text-xs font-bold font-sans"

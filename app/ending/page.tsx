@@ -80,14 +80,18 @@ function EndingContent() {
 
       {/* 按鈕 */}
       <div className="relative z-10 mt-24 w-full max-w-sm">
-        <ChoiceButton 
-          text="再次遊玩" 
-          onClick={() => {
-            localStorage.removeItem('vn-save-ancient');
-            router.push('/');
-          }} 
-          delay={3.5}
-        />
+      <ChoiceButton 
+        text="再次遊玩" 
+        onClick={() => {
+          localStorage.removeItem('vn-save-ancient');
+          localStorage.removeItem('game-inventory');
+          localStorage.removeItem('game-memory-log');
+          sessionStorage.clear();
+
+          window.location.href = '/';
+        }} 
+        delay={3.5}
+      />
       </div>
 
       {/* 裝飾線條 */}
