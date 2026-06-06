@@ -46,6 +46,10 @@ export default function LandingPage() {
         <p className="text-xl md:text-2xl tracking-[0.5em] text-stone-400 font-light">
           ANCIENT PALACE SECRETS
         </p>
+
+        <p className="mt-6 text-sm tracking-[0.25em] text-[#D4AF37]/70 font-serif md:hidden">
+        手機遊玩請將螢幕轉為橫式，以獲得最佳體驗
+        </p>
       </motion.div>
 
       {/* 按鈕區域 */}
