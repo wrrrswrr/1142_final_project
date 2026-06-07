@@ -55,7 +55,7 @@ export default function EndingTrigger() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.2 }}
-          className="fixed inset-0 z-[9000] flex flex-col items-center justify-center font-serif"
+          className="fixed inset-0 z-9000 flex flex-col items-center justify-center font-serif"
           style={{ background: 'rgba(0,0,0,0.92)' }}
         >
           {/* 背景裝飾粒子光暈 */}

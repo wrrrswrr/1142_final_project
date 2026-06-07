@@ -127,7 +127,7 @@ function BlushDetailContent() {
     return Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI);
   }, []);
 
-  const handlePorcelainMouseDown = useCallback((e: React.MouseEvent) => {
+  const handlePorcelainMouseDown = useCallback((e: any) => {
     // phase 3：點擊顯示「已取得線索」
     if (keyPhase === 3) {
       return;
@@ -147,14 +147,14 @@ function BlushDetailContent() {
   }, [getAngleFromCenter, rotation, keyPhase, porcelainLifted]);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (e: any) => {
       if (!isDragging) return;
       const currentAngle = getAngleFromCenter(e);
       const delta = currentAngle - dragStartAngleRef.current;
       setRotation(dragStartRotationRef.current + delta);
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = (e: any) => {
       if (!isDragging) return;
       setIsDragging(false);
       const currentAngle = getAngleFromCenter(e);
@@ -168,11 +168,11 @@ function BlushDetailContent() {
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('pointermove', handleMouseMove as any);
+    window.addEventListener('pointerup', handleMouseUp as any);
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('pointermove', handleMouseMove as any);
+      window.removeEventListener('pointerup', handleMouseUp as any);
     };
   }, [isDragging, getAngleFromCenter, keyPhase, playSFX]);
 
@@ -287,8 +287,10 @@ function BlushDetailContent() {
           alt="porcelain2"
           draggable={false}
           onLoad={handlePorcelainLoad}
-          onMouseDown={handlePorcelainMouseDown}
-          className="w-96 h-auto select-none pointer-events-auto"
+          onPointerDown={(e) => {
+            handlePorcelainMouseDown(e as any);
+          }}
+          className="w-[55vw] max-w-[240px] md:w-96 md:max-w-none h-auto select-none pointer-events-auto"
           animate={{
             y: porcelainLifted ? 0 : initY,
             rotate: rotation,
