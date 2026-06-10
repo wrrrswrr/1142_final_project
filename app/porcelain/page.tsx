@@ -12,6 +12,7 @@ import { INVESTIGATION_HOTSPOTS } from '../data/investigationHotspots';
 import InventoryBar from '../components/InventoryBar';
 import DialogueBox from '../components/DialogueBox';
 import { useAudio } from '.././lib/AudioContext';
+import { appendMemoryLog } from '../lib/memoryLog';
 import { motion, AnimatePresence } from 'motion/react';
 import { Line } from '../types';
 
@@ -79,9 +80,17 @@ function BlushDetailContent() {
     try {
       const stored = localStorage.getItem('game-inventory');
       const slots = stored ? JSON.parse(stored) : [];
-    
-      if (slots[0] === '/key.png') {
+      const memoryStored = localStorage.getItem('game-memory-log');
+      const memoryLog: string[] = memoryStored ? JSON.parse(memoryStored) : [];
+      const hasClue =
+        slots[0] === '/key.png' ||
+        slots[0] === '/letter.png' ||
+        memoryLog.includes('/key.png');
+
+      if (hasClue) {
         setKeyPhase(3);
+        setShowBottomText(false);
+        setShowClueHint(true);
       }
     } catch {}
   }, []);
@@ -130,6 +139,7 @@ function BlushDetailContent() {
   const handlePorcelainMouseDown = useCallback((e: any) => {
     // phase 3：點擊顯示「已取得線索」
     if (keyPhase === 3) {
+      setShowClueHint(true);
       return;
     }
     // 尚未被點起：點一下移到中央
@@ -200,6 +210,7 @@ function BlushDetailContent() {
       slots[0] = '/key.png';
       localStorage.setItem('game-inventory', JSON.stringify(slots));
       window.dispatchEvent(new Event('inventory-update'));
+      appendMemoryLog('/key.png');
     } catch {}
     
     setKeyPhase(3);

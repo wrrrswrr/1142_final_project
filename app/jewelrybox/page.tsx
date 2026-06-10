@@ -132,6 +132,7 @@ function BlushDetailContent() {
       slots[0] = null;
       localStorage.setItem('game-inventory', JSON.stringify(slots));
       window.dispatchEvent(new Event('inventory-update'));
+      appendMemoryLog('/key.png');
       setHasKey(false);
     } catch {}
 
